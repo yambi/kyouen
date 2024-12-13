@@ -1,207 +1,224 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="utf-8">
-<script type="application/javascript">
-//<![CDATA[
-var size = 10;
-var piece;
-var board = [];
-var bs = new Array();
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+        .square {
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            background: #ffffff;
+        }
 
-var len = function(x1,y1,x2,y2){
-   return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-}
+        .square:before {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 1px;
+            height: 32px;
+            left: 15.5px;
+            background: #000000;
+        }
 
-function isZero(r){
-    return Math.abs(r)<0.000001;
-}
+        .square:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 32px;
+            height: 1px;
+            top: 15.5px;
+            background: #000000;
+        }
+    </style>
+    <script type="application/javascript">
+        //<![CDATA[
+        var size = 9;
+        var piece;
+        var board = [];
+        var bs = new Array();
 
-function check(x1,y1,x2,y2,x3,y3,x4,y4){
-    if(x1==x4 && y1==y4)return false;
-    if(x2==x4 && y2==y4)return false;
-    if(x3==x4 && y3==y4)return false;
-    var ab = len(x1,y1,x2,y2);
-    var cd = len(x3,y3,x4,y4);
-    var bc = len(x2,y2,x3,y3);
-    var da = len(x4,y4,x1,y1);
-    var ac = len(x1,y1,x3,y3);
-    var bd = len(x2,y2,x4,y4);
-    return isZero(-ab*cd+bc*da+ac*bd)||isZero(ab*cd-bc*da+ac*bd)||isZero(ab*cd+bc*da-ac*bd);
-}
+        var len = function (x1, y1, x2, y2) {
+            return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        }
 
-var showBoard = function(){
-    var b = document.getElementById("board");
-    while(b.firstChild){
-        b.removeChild(b.firstChild);
-    }
-    for(var i=0;i<size;i++){
-        loop:
-        for(var j=0;j<size;j++){
-            if(board[i][j]==2)board[i][j]=0;
-            if(board[i][j]==3)board[i][j]=1;
-            for(var b1=0;b1<bs.length;b1++){
-                for(var b2=b1+1;b2<bs.length;b2++){
-                    for(var b3=b2+1;b3<bs.length;b3++){
-                        if(check(bs[b1]%size,Math.floor(bs[b1]/size),bs[b2]%size,Math.floor(bs[b2]/size),bs[b3]%size,Math.floor(bs[b3]/size),i,j)){
-                            board[i][j]+=2;
-                            continue loop;
+        function isZero(r) {
+            return Math.abs(r) < 0.000001;
+        }
+
+        function check(x1, y1, x2, y2, x3, y3, x4, y4) {
+            if (x1 == x4 && y1 == y4) return false;
+            if (x2 == x4 && y2 == y4) return false;
+            if (x3 == x4 && y3 == y4) return false;
+            var ab = len(x1, y1, x2, y2);
+            var cd = len(x3, y3, x4, y4);
+            var bc = len(x2, y2, x3, y3);
+            var da = len(x4, y4, x1, y1);
+            var ac = len(x1, y1, x3, y3);
+            var bd = len(x2, y2, x4, y4);
+            return isZero(-ab * cd + bc * da + ac * bd) || isZero(ab * cd - bc * da + ac * bd) || isZero(ab * cd + bc * da - ac * bd);
+        }
+
+        var showBoard = function () {
+            var b = document.getElementById("board");
+            while (b.firstChild) {
+                b.removeChild(b.firstChild);
+            }
+            for (var i = 0; i < size; i++) {
+                loop:
+                for (var j = 0; j < size; j++) {
+                    if (board[i][j] == 2) board[i][j] = 0;
+                    if (board[i][j] == 3) board[i][j] = 1;
+                    for (var b1 = 0; b1 < bs.length; b1++) {
+                        for (var b2 = b1 + 1; b2 < bs.length; b2++) {
+                            for (var b3 = b2 + 1; b3 < bs.length; b3++) {
+                                if (check(bs[b1] % size, Math.floor(bs[b1] / size), bs[b2] % size, Math.floor(bs[b2] / size), bs[b3] % size, Math.floor(bs[b3] / size), i, j)) {
+                                    board[i][j] += 2;
+                                    continue loop;
+                                }
+                            }
                         }
                     }
-                }     
+                }
+            }
+
+            for (var i = 0; i < size; i++) {
+                for (var j = 0; j < size; j++) {
+                    var c = piece[board[i][j]].cloneNode(true);
+                    if (board[i][j] == 2 && !document.getElementById("hint").checked) c = piece[0].cloneNode(true);
+                    if (board[i][j] == 3 && !document.getElementById("res").checked) c = piece[1].cloneNode(true);
+
+                    c.style.left = (i * 32) + "px";
+                    c.style.top = (j * 32) + "px";
+                    b.appendChild(c);
+                    (function () {
+                        var _i = i, _j = j;
+                        c.onclick = function () {
+                            if (board[_i][_j] == 0) {
+                                board[_i][_j] = 1;
+                                bs.push(_i + _j * size);
+                            }
+                            else if (board[_i][_j] == 1) {
+                                board[_i][_j] = 0;
+                                var nbs = new Array();
+                                for (var k = 0; k < bs.length; k++) {
+                                    if (bs[k] != _i + _j * size) nbs.push(bs[k]);
+                                }
+                                bs = nbs;
+                            }
+                            else if (board[_i][_j] == 2) {
+                                board[_i][_j] = 3;
+                                bs.push(_i + _j * size);
+                            }
+                            else if (board[_i][_j] == 3) {
+                                board[_i][_j] = 2;
+                                var nbs = new Array();
+                                for (var k = 0; k < bs.length; k++) {
+                                    if (bs[k] != _i + _j * size) nbs.push(bs[k]);
+                                }
+                                bs = nbs;
+                            }
+                            showBoard();
+                        };
+                    })();
+                }
+            }
+            console.log(bs);
+        }
+
+        function kp(event) {
+            console.log(pressedChar(event));
+            if (event.keyCode == 13) reset();
+
+            var char = pressedChar(event);
+            if (char && !char.match(/\d/)) {
+                return false;
+            } else {
+                return true;
             }
         }
-    }    
-
-    for(var i=0;i<size;i++){
-        for(var j=0;j<size;j++){
-            var c = piece[board[i][j]].cloneNode(true);
-            if(board[i][j]==2&&!document.getElementById("hint").checked)c = piece[0].cloneNode(true);
-            
-            c.style.left = (i*32)+"px";
-            c.style.top = (j*32)+"px";
-            b.appendChild(c);
-            (function(){
-                var _i = i, _j = j;
-                c.onclick = function(){
-                    if(board[_i][_j]==0){
-                        board[_i][_j]=1;
-                        bs.push(_i+_j*size);
-                    }
-                    else if(board[_i][_j]==1){
-                        board[_i][_j]=0;
-                        var nbs = new Array();
-                        for(var k=0;k<bs.length;k++){
-                            if(bs[k]!=_i+_j*size)nbs.push(bs[k]);
-                        }
-                        bs = nbs;
-                    }
-                    else if(board[_i][_j]==2){
-                        board[_i][_j]=3;
-                        bs.push(_i+_j*size);
-                    }
-                    else if(board[_i][_j]==3){
-                        board[_i][_j]=2;
-                        var nbs = new Array();
-                        for(var k=0;k<bs.length;k++){
-                            if(bs[k]!=_i+_j*size)nbs.push(bs[k]);
-                        }
-                        bs = nbs;
-                    }
-                    showBoard();
-                };
-            })();
+        function pressedChar(event) {
+            var code = 0;
+            if (event.charCode === 0) {// Firefox, Safari control code
+                code = 0;
+            } else if (!event.keyCode && event.charCode) {// Firefox
+                code = event.charCode;
+            } else if (event.keyCode && !event.charCode) {// IE
+                code = event.keyCode;
+            } else if (event.keyCode == event.charCode) {// Safari
+                code = event.keyCode;
+            }
+            if (32 <= code && code <= 126) {// not ASCII
+                return String.fromCharCode(code);
+            } else {
+                return null;
+            }
         }
-    }
-    console.log(bs);
-}
-
-function kp(event){
-   console.log(pressedChar(event));
-   if(event.keyCode==13)reset();
-
-   var char = pressedChar(event);
-   if (char && !char.match(/\d/)) {
-      return false;
-   } else {
-      return true;
-   }
-}
-function pressedChar(event) {
-  var code = 0;
-  if (event.charCode === 0) {// Firefox, Safari control code
-    code = 0;
-  } else if (!event.keyCode && event.charCode) {// Firefox
-    code = event.charCode;
-  } else if (event.keyCode && !event.charCode) {// IE
-    code = event.keyCode;
-  } else if (event.keyCode == event.charCode) {// Safari
-    code = event.keyCode;
-  }
-  if (32 <= code && code <= 126) {// not ASCII
-    return String.fromCharCode(code);
-  } else {
-    return null;
-  }
-}
 
 
-function reset(){
-    bs = new Array();
-    size=document.getElementById("size").value;
-    if(size>32){
-        document.getElementById("size").value=16;
-        size=32;
-    }
-    if(size<2){
-        document.getElementById("size").value=2;
-        size=2;
-    }
-    board = [];
-    for(var i = 0; i<size;i++){
-        board[i] = [];
-        for(var j=0;j<size;j++){
-            board[i][j] = 0;
+        function reset() {
+            bs = new Array();
+            size = document.getElementById("size").value;
+            if (size > 32) {
+                document.getElementById("size").value = 32;
+                size = 32;
+            }
+            if (size < 2) {
+                document.getElementById("size").value = 2;
+                size = 2;
+            }
+            board = [];
+            for (var i = 0; i < size; i++) {
+                board[i] = [];
+                for (var j = 0; j < size; j++) {
+                    board[i][j] = 0;
+                }
+            }
+            showBoard();
         }
-    }
-    showBoard();
-}
 
 
-onload = function(){
-    piece = [document.getElementById("cell"),document.getElementById("black"),document.getElementById("yellow"),document.getElementById("rb")];
-    for(var i = 0; i<size;i++){
-        board[i] = [];
-        for(var j=0;j<size;j++){
-            board[i][j] = 0;
-        }
-    }
-    showBoard();
-};
-//]]>
-</script>
-<title>共円</title></head>
+        onload = function () {
+            piece = [document.getElementById("cell"), document.getElementById("black"), document.getElementById("yellow"), document.getElementById("rb")];
+            for (var i = 0; i < size; i++) {
+                board[i] = [];
+                for (var j = 0; j < size; j++) {
+                    board[i][j] = 0;
+                }
+            }
+            showBoard();
+        };
+        //]]>
+    </script>
+    <title>共円</title>
+</head>
+
 <body style="background-color:#e2e2e2;">
-<h1> <a href="http://nadamath2012.web.fc2.com/program/kyouen1.html">共円 (Kyouen)</a> </h1>
-<p style="float:right;">
-<script type="text/javascript"><!--
-google_ad_client = "ca-pub-5111390744894002";
-/* test */
-google_ad_slot = "9631951767";
-google_ad_width = 300;
-google_ad_height = 250;
-//-->
-</script>
-<script type="text/javascript"
-src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-</script>
-</p>
+    <h1> 共円 (Kyouen) </h1>
 
-<p>
-Size: <input type="number" id="size" value="10" min="2" max="32" size="2" onkeypress="return kp(event)" onchange="reset()" style="text-align:right;ime-mode:disabled;background-color:#eeeeee;"/> <br>
-Hint: <input type="checkbox" id="hint" onchange="showBoard()"> 
-<!-- <input type="button" value="reset" onclick="reset()"> -->
-</p>
+    <p>
+        Size: <input type="number" id="size" value="9" min="2" max="32" size="2" onkeypress="return kp(event)"
+            onchange="reset()" style="text-align:right;ime-mode:disabled;background-color:#eeeeee;" />
+        <input type="button" value="reset" onclick="reset()"><br>
+        Result: <input type="checkbox" id="res" onchange="showBoard()">
+        Hint: <input type="checkbox" id="hint" onchange="showBoard()">
+
+    </p>
 
 
 
 
-<div id="board" style="position:relative;" onselectstart="return false"></div>
+    <div id="board" style="position:relative; margin: 10px;" onselectstart="return false"></div>
 
-
-<div style="display:none">
-<div id="cell" style="position:absolute;width:32px;height:32px;background-color:#ffffff;border:1px solid black;">
-</div>
-<div id="black" style="position:absolute;width:32px;height:32px;background-color:#ffffff;border:1px solid black;">
-<span style="position:absolute;top:6px;left:8px">&#9679</span>
-</div>
-<div id="yellow" style="position:absolute;width:32px;height:32px;background-color:#ffff00;border:1px solid black;"></div>
-<div id="rb" style="position:absolute;width:32px;height:32px;background-color:#ff0000;border:1px solid black;">
-<span style="position:absolute;top:6px;left:8px">&#9679</span>
-</div>
-
-</div>
-
+    <div style="display:none">
+        <div id="cell" class="square"></div>
+        <div id="black" class="square"><span style="position:absolute;top:4px;left:8px">&#9679</span></div>
+        <div id="yellow" class="square" style="background:#ffff00"></div>
+        <div id="rb" class="square" style="background: red""><span style=" position:absolute;top:4px;left:8px;">
+            &#9679</span></div>
+    </div>
 
 </body>
+
 </html>
