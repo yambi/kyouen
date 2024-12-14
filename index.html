@@ -85,9 +85,11 @@
 
             for (var i = 0; i < size; i++) {
                 for (var j = 0; j < size; j++) {
-                    var c = piece[board[i][j]].cloneNode(true);
-                    if (board[i][j] == 2 && !document.getElementById("hint").checked) c = piece[0].cloneNode(true);
-                    if (board[i][j] == 3 && !document.getElementById("res").checked) c = piece[1].cloneNode(true);
+                    k = board[i][j];
+                    if(document.getElementById("res").checked) k+=4;
+                    if(document.getElementById("hint").checked) k+=8;
+                    t = [0,1,0,1,0,1,0,2,0,1,3,4,0,1,3,5];
+                    var c = piece[t[k]].cloneNode(true);
 
                     c.style.left = (i * 32) + "px";
                     c.style.top = (j * 32) + "px";
@@ -178,9 +180,8 @@
             showBoard();
         }
 
-
         onload = function () {
-            piece = [document.getElementById("cell"), document.getElementById("black"), document.getElementById("yellow"), document.getElementById("rb")];
+            piece = [document.getElementById("cell"), document.getElementById("bcell"), document.getElementById("rcell"), document.getElementById("ycell"), document.getElementById("ybcell"), document.getElementById("yrcell")];
             for (var i = 0; i < size; i++) {
                 board[i] = [];
                 for (var j = 0; j < size; j++) {
@@ -213,10 +214,11 @@
 
     <div style="display:none">
         <div id="cell" class="square"></div>
-        <div id="black" class="square"><span style="position:absolute;top:4px;left:8px">&#9679</span></div>
-        <div id="yellow" class="square" style="background:#ffff00"></div>
-        <div id="rb" class="square" style="background: red""><span style=" position:absolute;top:4px;left:8px;">
-            &#9679</span></div>
+        <div id="bcell" class="square"><span style="position:absolute;top:4px;left:8px">&#9679</span></div>
+        <div id="rcell" class="square" style=""><span style=" position:absolute;top:4px;left:8px;z-index:2;color:red;">&#9679</span></div>
+        <div id="ycell" class="square" style="background:yellow"></div>
+        <div id="ybcell" class="square" style="background:yellow"><span style="position:absolute;top:4px;left:8px">&#9679</span></div>
+        <div id="yrcell" class="square" style="background:yellow"><span style=" position:absolute;top:4px;left:8px;z-index:2;color:red;">&#9679</span></div>
     </div>
 
 </body>
