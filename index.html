@@ -60,6 +60,38 @@
             return isZero(-ab * cd + bc * da + ac * bd) || isZero(ab * cd - bc * da + ac * bd) || isZero(ab * cd + bc * da - ac * bd);
         }
 
+        function getCircleFromPoints(x1, y1, x2, y2, x3, y3) {
+            var A = x1 * (y2 - y3) - y1 * (x2 - x3) + x2 * y3 - x3 * y2;
+            var B = (x1 * x1 + y1 * y1) * (y3 - y2) + (x2 * x2 + y2 * y2) * (y1 - y3) + (x3 * x3 + y3 * y3) * (y2 - y1);
+            var C = (x1 * x1 + y1 * y1) * (x2 - x3) + (x2 * x2 + y2 * y2) * (x3 - x1) + (x3 * x3 + y3 * y3) * (x1 - x2);
+            var D = (x1 * x1 + y1 * y1) * (x3 * y2 - x2 * y3) + (x2 * x2 + y2 * y2) * (x1 * y3 - x3 * y1) + (x3 * x3 + y3 * y3) * (x2 * y1 - x1 * y2);
+            if(A!=0){
+                var centerX = -B / (2 * A);
+                var centerY = -C / (2 * A);
+                var radius = Math.sqrt((B * B + C * C - 4 * A * D) / (4 * A * A));
+                return { centerX: centerX, centerY: centerY, radius: radius, isCircle: true};
+            }
+            return { isCircle: false};
+        }
+
+        function drawCircle(ctx, centerX, centerY, radius) {
+            ctx.beginPath();
+            ctx.arc(centerX*32+16, centerY*32+16, radius*32, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        function drawLine(ctx, x1, y1, x2, y2) {
+            ctx.beginPath();
+            dx = x2-x1;
+            dy = y2-y1;
+            ctx.moveTo((x1+dx*size) * 32 + 16, (y1+dy*size) * 32 + 16);
+            ctx.lineTo((x1-dx*size) * 32 + 16, (y1-dy*size) * 32 + 16);
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
         var showBoard = function () {
             var b = document.getElementById("board");
             while (b.firstChild) {
@@ -85,7 +117,7 @@
 
             for (var i = 0; i < size; i++) {
                 for (var j = 0; j < size; j++) {
-                    k = board[i][j];
+                    k = board[i][j]; // 1:ball 2:check 4:res 8:hint
                     if(document.getElementById("res").checked) k+=4;
                     if(document.getElementById("hint").checked) k+=8;
                     t = [0,1,0,1,0,1,0,2,0,1,3,4,0,1,3,5];
@@ -126,6 +158,39 @@
                     })();
                 }
             }
+
+            // draw circles
+            var canvas = document.getElementById('myCanvas');
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var dpr = 3;
+            width = 32*size;
+            height = 32*size;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            if (document.getElementById("res").checked){
+                for(var p1=0; p1<bs.length; p1++){
+                    for(var p2=p1+1; p2<bs.length; p2++){
+                        for(var p3=p2+1; p3<bs.length; p3++){
+                            for(var p4=p3+1; p4<bs.length; p4++){
+                                if(check(bs[p1]%size, Math.floor(bs[p1]/size), bs[p2]%size, Math.floor(bs[p2]/size), bs[p3]%size, Math.floor(bs[p3]/size), bs[p4]%size, Math.floor(bs[p4]/size))){
+                                    var circle = getCircleFromPoints(bs[p1]%size, Math.floor(bs[p1]/size), bs[p2]%size, Math.floor(bs[p2]/size), bs[p3]%size, Math.floor(bs[p3]/size));
+                                    if(circle.isCircle){
+                                        drawCircle(ctx, circle.centerX, circle.centerY, circle.radius);
+                                    }
+                                    else{
+                                        drawLine(ctx, bs[p1]%size, Math.floor(bs[p1]/size), bs[p2]%size, Math.floor(bs[p2]/size));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             console.log(bs);
         }
 
@@ -207,10 +272,10 @@
 
     </p>
 
-
-
-
-    <div id="board" style="position:relative; margin: 10px;" onselectstart="return false"></div>
+    <div id="boardContainer" style="position: relative; margin: 10px">
+        <div id="board" style="position: absolute; z-index: 1;" onselectstart="return false"></div>
+        <canvas id="myCanvas" width="500" height="500" style="position: absolute; z-index: 2; pointer-events: none;"></canvas>
+    </div>
 
     <div style="display:none">
         <div id="cell" class="square"></div>
