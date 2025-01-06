@@ -171,7 +171,7 @@
             ctx.scale(dpr, dpr);
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
-            if (document.getElementById("res").checked){
+            if (document.getElementById("res").checked && document.getElementById("hint").checked){
                 for(var p1=0; p1<bs.length; p1++){
                     for(var p2=p1+1; p2<bs.length; p2++){
                         for(var p3=p2+1; p3<bs.length; p3++){
